@@ -1,15 +1,15 @@
 package TrajectoryLib.Geometry;
 
-public class Vector2D{
+public class Vector2d{
     private double magnitude;
-    private Rotation2D heading;
+    private Rotation2d heading;
 
-    public Vector2D(double dx, double dy){
+    public Vector2d(double dx, double dy){
         this.magnitude = Math.hypot(dx, dy);
-        this.heading = Rotation2D.fromRadians(Math.atan2(dy, dx));
+        this.heading = new Rotation2d(dx, dy);
     }
 
-    public Vector2D(double magnitude, Rotation2D heading){
+    public Vector2d(double magnitude, Rotation2d heading){
         this.magnitude = magnitude;
         this.heading = heading;
     }
@@ -26,7 +26,7 @@ public class Vector2D{
         return magnitude;
     }
 
-    public Rotation2D getHeading(){
+    public Rotation2d getHeading(){
         return heading;
     }
 }

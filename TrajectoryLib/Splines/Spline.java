@@ -28,7 +28,7 @@ public class Spline {
      * @param t 'time' value along path 0-1
      * @return the position at time t
      */
-    public double getPos(double t){
+    public double getPosition(double t){
         t = MathUtil.clamp(t, 0, 1);
         return c0 + c1 * t + c2 * t*t + c3 * t*t*t + c4 * t*t*t*t + c5 * t*t*t*t*t; 
     }
@@ -40,6 +40,16 @@ public class Spline {
      */
     public double getVelocity(double t){
         t = MathUtil.clamp(t, 0, 1);
+        //the derivative of the position expression to get the velocity
         return c1 + 2.0 * c2 * t + 3.0 * c3 * t*t + 4.0 * c4 * t*t*t + 5.0 * c5 * t*t*t*t; 
+    }
+
+    public void printCoefficients(){
+        System.out.println(String.format("c0: %.2f, c1: %.2f, c2: %.2f, c3: %.2f, c4: %.2f, c5: %.2f", c0, c1, c2, c3, c4, c5));
+    }
+
+    @Override
+    public String toString(){
+        return String.format("c0: %.2f, c1: %.2f, c2: %.2f, c3: %.2f, c4: %.2f, c5: %.2f", c0, c1, c2, c3, c4, c5);
     }
 }
