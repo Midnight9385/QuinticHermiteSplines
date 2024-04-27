@@ -1,5 +1,8 @@
 package TrajectoryLib.Splines;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import TrajectoryLib.Geometry.Pose2d;
 import TrajectoryLib.Geometry.Pose2dWithMotion;
 import TrajectoryLib.Geometry.Rotation2d;
@@ -15,6 +18,18 @@ public class Spline2d{
 
         this.start = start;
         this.end = end;
+    }
+
+    public List<Pose2dWithMotion> getSamplePoints(int numPoints){
+        List<Pose2dWithMotion> points = new ArrayList<>();
+
+        double timeStep = 1.0/((double)numPoints);
+
+        for (int i = 0; i < numPoints; i++) {
+            points.add(getPoseWithMotion(i*timeStep));
+        }
+
+        return points;
     }
 
     public Pose2dWithMotion getPoseWithMotion(double t){

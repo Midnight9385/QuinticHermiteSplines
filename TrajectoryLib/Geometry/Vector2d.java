@@ -1,6 +1,6 @@
 package TrajectoryLib.Geometry;
 
-public class Vector2d{
+public class Vector2d implements interpolable<Vector2d>{
     private double magnitude;
     private Rotation2d heading;
 
@@ -28,5 +28,15 @@ public class Vector2d{
 
     public Rotation2d getHeading(){
         return heading;
+    }
+
+    public Vector2d adjustMagnitude(double newMagnitude){
+        this.magnitude = newMagnitude;
+        return this;
+    }
+
+    @Override
+    public Vector2d interpolate(Vector2d other, double t){
+        return new Vector2d(GeometryUtil.doubleLerp(magnitude, other.magnitude, t), heading.interpolate(other.heading, t));
     }
 }
