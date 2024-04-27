@@ -2,43 +2,54 @@ package TrajectoryLib.util;
 
 import TrajectoryLib.Geometry.Pose2dWithMotion;
 import TrajectoryLib.Geometry.Rotation2d;
+import TrajectoryLib.Path.Path;
+import TrajectoryLib.Path.RotationTarget;
+import TrajectoryLib.Path.Trajectory;
+import TrajectoryLib.Path.Trajectory.State;
 import TrajectoryLib.Splines.Spline2d;
 
 public class TrajectoryTests {
     public static void main(String[] args) {
-        splineGenerationTest();
+        try {
+            trajectoryGenerationTest(0.005);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
 
-    public static double[] splineGenerationTestPyX(){
-        //these come from a predefined path that has been calculated outside the code
-        //the intent is to test that the math in the code matches expectations
+    public static void trajectoryGenerationTest(double resolution){
+        //logs and records the (x, y) and (dx, dy) of the generated trajectory
         Pose2dWithMotion start = new Pose2dWithMotion(5.14, 3.77, Rotation2d.ZERO, 0.0, 0.0);
         Pose2dWithMotion end = new Pose2dWithMotion(8.9, 2.64, Rotation2d.ZERO, 1, -1.8);
-        Spline2d spline = new Spline2d(start, end);
+        Spline2d[] splines = {
+            new Spline2d(start, end)
+        };
+        RotationTarget[] rotationTargets = {
+            new RotationTarget(0.25, Rotation2d.fromDegrees(45.0)),
+            new RotationTarget(0.75, Rotation2d.fromDegrees(135)),
+        };
 
-        double[] x = new double[20];
+        Path path = new Path(splines, rotationTargets);
 
-        for(int i=0; i<x.length; i++){
-            x[i] = spline.getPose(i*0.05).getX();
+        Trajectory traj = new Trajectory(path, start.getVelocity(), start.getRotation());
+
+        String x = "", y = "", dx = "", dy = "";
+
+        for (double t = 0; t < traj.getTotaltime(); t+=resolution) {
+            State state = traj.sample(t);
+
+            x += Double.toString(state.getTargetPose().getX())+", ";
+            y += Double.toString(state.getTargetPose().getY())+", ";
+            dx += Double.toString(state.getTargetVelocity().getX())+", ";
+            dy += Double.toString(state.getTargetVelocity().getY())+", ";
         }
 
-        return x;
-    }
-
-    public static double[] splineGenerationTestPyY(){
-        //these come from a predefined path that has been calculated outside the code
-        //the intent is to test that the math in the code matches expectations
-        Pose2dWithMotion start = new Pose2dWithMotion(5.14, 3.77, Rotation2d.ZERO, 0.0, 0.0);
-        Pose2dWithMotion end = new Pose2dWithMotion(8.9, 2.64, Rotation2d.ZERO, 1, -1.8);
-        Spline2d spline = new Spline2d(start, end);
-
-        double[] y = new double[20];
-
-        for(int i=0; i<y.length; i++){
-            y[i] = spline.getPose(i*0.05).getX();
-        }
-
-        return y;
+        System.out.println("Total Path Time: "+traj.getTotaltime());
+        System.out.println("X :\n"+x);
+        System.out.println("Y :\n"+y);
+        System.out.println("dX :\n"+dx);
+        System.out.println("dY :\n"+dy);
     }
 
     public static void splineGenerationTest(){

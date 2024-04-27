@@ -51,6 +51,7 @@ public class Trajectory {
                 state.targetVelocity = startingSpeeds;
             } else {
                 state.deltaPos = path.getPoint(i + 1).distanceAlongPath - path.getPoint(i).distanceAlongPath;
+                state.targetVelocity = path.getPoint(i).position.getVelocity();
 
                 double v0 = states.get(states.size() - 1).targetVelocity.getMagnitude();
                 double vMax = Math.sqrt(
@@ -258,6 +259,20 @@ public class Trajectory {
          */
         public Pose2d getTargetPose() {
             return targetPose;
+        }
+
+        /**
+         * Get the target velocity
+         *
+         * @return The target velocity
+         */
+        public Vector2d getTargetVelocity() {
+            return targetVelocity;
+        }
+
+        @Override
+        public String toString(){
+            return String.format("pose: (%.2f, %.2f) velocity: (%.2f, %.2f)", targetPose.getX(), targetPose.getY(), targetVelocity.getX(), targetVelocity.getY());
         }
     }
 }

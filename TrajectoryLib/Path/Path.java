@@ -2,6 +2,7 @@ package TrajectoryLib.Path;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import TrajectoryLib.Geometry.GeometryUtil;
@@ -12,11 +13,11 @@ public class Path {
 
     private List<PathPoint> points;
     private GoalEndState goalEndState;
-    private PathConstraints constraints;
+    private PathConstraints globalConstraints;
 
     public Path(Spline2d[] splines, RotationTarget[] rotationTargets) {
         this.points = buildPoints(splines, rotationTargets);
-        this.constraints = new PathConstraints(5.0, 4.0, 2.0 * Math.PI, 2.0 * Math.PI);
+        this.globalConstraints = new PathConstraints(5.0, 4.0, 2.0 * Math.PI, 2.0 * Math.PI);
         this.goalEndState = new GoalEndState(points.get(numPoints() - 1).position.getVelocity(),
                 points.get(numPoints() - 1).position.getRotation());
 
@@ -25,7 +26,7 @@ public class Path {
 
     public Path(PathConstraints constraints, Spline2d[] splines, RotationTarget[] rotationTargets) {
         this.points = buildPoints(splines, rotationTargets);
-        this.constraints = constraints;
+        this.globalConstraints = constraints;
 
         precalcValues();
     }
@@ -42,15 +43,17 @@ public class Path {
         return points.get(index);
     }
 
-    public PathConstraints getConstraints() {
-        return constraints;
+    public PathConstraints getGlobalConstraints() {
+        return globalConstraints;
     }
 
     public List<PathPoint> buildPoints(Spline2d[] splines, RotationTarget[] rotationTargets) {
         List<PathPoint> points = new ArrayList<>();
-        List<RotationTarget> rotTargets = Arrays.asList(rotationTargets);
+        List<RotationTarget> rotTargets = new LinkedList<RotationTarget>(Arrays.asList(rotationTargets));
 
         double timeStep = 1.0 / ((double) NumOfSamplePoints);
+
+        System.out.println(rotTargets);
 
         for (int i = 0; i < splines.length; i++) {
             for (int j = i == 0 ? 0 : 1; j < NumOfSamplePoints; j++) {
@@ -59,7 +62,8 @@ public class Path {
                 if (!rotTargets.isEmpty()) {
                     if (Math.abs(rotTargets.get(0).getPosition() - t) <= Math.abs(
                             rotTargets.get(0).getPosition() - Math.min(t + timeStep, 1.0))) {
-                        target = rotTargets.remove(0);
+                        target = rotTargets.get(0);
+                        rotTargets.remove(0);
                     }
                 }
                 points.add(new PathPoint(splines[i].getPoseWithMotion(j * timeStep), target));
@@ -77,6 +81,9 @@ public class Path {
         if (numPoints() > 0) {
             for (int i = 0; i < points.size(); i++) {
                 PathPoint point = points.get(i);
+                if (point.constraints == null) {
+                    point.constraints = globalConstraints;
+                }
 
                 point.curveRadius = getCurveRadiusAtPoint(i, points);
 
