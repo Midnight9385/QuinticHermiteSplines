@@ -18,22 +18,37 @@ public class Trajectory {
 
     public static List<State> generateStates(Path path, Vector2d startingSpeeds, Rotation2d startingRotation) {
         List<State> states = new ArrayList<>();
-        PathConstraints constraints = path.getConstraints();
+
+        double prevRotationTargetDist = 0.0;
+        Rotation2d prevRotationTargetRot = startingRotation;
+        int nextRotationTargetIdx = getNextRotationTargetIdx(path, 0);
+        double distanceBetweenTargets = path.getPoint(nextRotationTargetIdx).distanceAlongPath;
 
         // initial pass: creates states and handles accel
         for (int i = 0; i < path.numPoints(); i++) {
             State state = new State();
 
+            PathConstraints constraints = path.getPoint(i).constraints;
+            state.constraints = constraints;
+
+            if (i > nextRotationTargetIdx) {
+                prevRotationTargetDist = path.getPoint(nextRotationTargetIdx).distanceAlongPath;
+                prevRotationTargetRot = path.getPoint(nextRotationTargetIdx).rotationTarget.getTarget();
+                nextRotationTargetIdx = getNextRotationTargetIdx(path, i);
+                distanceBetweenTargets = path.getPoint(nextRotationTargetIdx).distanceAlongPath
+                        - prevRotationTargetDist;
+            }
+
+            RotationTarget nextTarget = path.getPoint(nextRotationTargetIdx).rotationTarget;
+
             state.targetPose = path.getPoint(i).position.getPose();
-            state.targetVelocity = path.getPoint(i).position.getVelocity();
-            state.constraints = path.getConstraints();
 
             if (i == path.numPoints() - 1) {
-                state.targetVelocity = path.getGoalEndState().getVelocity();
                 state.deltaPos = path.getPoint(i).distanceAlongPath - path.getPoint(i - 1).distanceAlongPath;
+                state.targetVelocity = path.getGoalEndState().getVelocity();
             } else if (i == 0) {
-                state.targetVelocity = startingSpeeds;
                 state.deltaPos = 0;
+                state.targetVelocity = startingSpeeds;
             } else {
                 state.deltaPos = path.getPoint(i + 1).distanceAlongPath - path.getPoint(i).distanceAlongPath;
 
@@ -45,12 +60,24 @@ public class Trajectory {
                 state.targetVelocity.adjustMagnitude(Math.min(vMax, path.getPoint(i).maxV));
             }
 
+            if (nextTarget.shouldRotateFast()) {
+                state.targetPose.adjustRotation(nextTarget.getTarget());
+            } else {
+                double t = (path.getPoint(i).distanceAlongPath - prevRotationTargetDist) / distanceBetweenTargets;
+                t = Math.min(Math.max(0.0, t), 1.0);
+                if (!Double.isFinite(t)) {
+                    t = 0.0;
+                }
+
+                state.targetPose.adjustRotation(prevRotationTargetRot.interpolate(nextTarget.getTarget(), t));
+            }
+
             states.add(state);
         }
 
         // second pass: handles deccel
         for (int i = states.size() - 2; i > 1; i--) {
-            constraints = states.get(i).constraints;
+            PathConstraints constraints = states.get(i).constraints;
 
             double v0 = states.get(i + 1).targetVelocity.getMagnitude();
 
@@ -64,7 +91,7 @@ public class Trajectory {
         double time = 0;
         states.get(0).time = 0;
 
-        //final pass: calculates time
+        // final pass: calculates time
         for (int i = 1; i < states.size(); i++) {
             double v0 = states.get(i - 1).targetVelocity.getMagnitude();
             double v = states.get(i).targetVelocity.getMagnitude();
@@ -75,6 +102,19 @@ public class Trajectory {
         }
 
         return states;
+    }
+
+    private static int getNextRotationTargetIdx(Path path, int startingIndex) {
+        int idx = path.numPoints() - 1;
+
+        for (int i = startingIndex; i < path.numPoints() - 1; i++) {
+            if (path.getPoint(i).rotationTarget != null) {
+                idx = i;
+                break;
+            }
+        }
+
+        return idx;
     }
 
     /**

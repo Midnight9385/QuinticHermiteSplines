@@ -76,6 +76,11 @@ public class Pose2d implements interpolable<Pose2d> {
         return Math.hypot(other.x - x, other.y - y);
     }
 
+    public Pose2d adjustRotation(Rotation2d newTheta) {
+        this.theta = newTheta;
+        return this;
+    }
+
     @Override
     public Pose2d interpolate(Pose2d other, double t) {
         return new Pose2d(

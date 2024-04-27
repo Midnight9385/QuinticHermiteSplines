@@ -14,8 +14,8 @@ public class GoalEndState {
   /**
    * Create a new goal end state
    *
-   * @param velocity The goal end velocity (M/S)
-   * @param rotation The goal rotation
+   * @param velocity   The goal end velocity (M/S)
+   * @param rotation   The goal rotation
    * @param rotateFast Should the robot reach the rotation as fast as possible
    */
   public GoalEndState(Vector2d velocity, Rotation2d rotation, boolean rotateFast) {
@@ -37,17 +37,18 @@ public class GoalEndState {
   /**
    * Create a goal end state from json
    *
-   * @param endStateJson {@link org.json.simple.JSONObject} representing a goal end state
+   * @param endStateJson {@link org.json.simple.JSONObject} representing a goal
+   *                     end state
    * @return The goal end state defined by the given json
    */
   // static GoalEndState fromJson(JSONObject endStateJson) {
-  //   double vel = ((Number) endStateJson.get("velocity")).doubleValue();
-  //   double deg = ((Number) endStateJson.get("rotation")).doubleValue();
-  //   boolean rotateFast = false;
-  //   if (endStateJson.get("rotateFast") != null) {
-  //     rotateFast = (boolean) endStateJson.get("rotateFast");
-  //   }
-  //   return new GoalEndState(vel, Rotation2d.fromDegrees(deg), rotateFast);
+  // double vel = ((Number) endStateJson.get("velocity")).doubleValue();
+  // double deg = ((Number) endStateJson.get("rotation")).doubleValue();
+  // boolean rotateFast = false;
+  // if (endStateJson.get("rotateFast") != null) {
+  // rotateFast = (boolean) endStateJson.get("rotateFast");
+  // }
+  // return new GoalEndState(vel, Rotation2d.fromDegrees(deg), rotateFast);
   // }
 
   /**
@@ -79,8 +80,10 @@ public class GoalEndState {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
     GoalEndState that = (GoalEndState) o;
     return Math.abs(that.velocity.getMagnitude() - velocity.getMagnitude()) < 1E-3
         && Objects.equals(rotation, that.rotation)
