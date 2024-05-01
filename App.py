@@ -2,6 +2,7 @@ import tkinter
 from tkinter import filedialog
 import PyQt6.QtWidgets as widgets
 from PyQt6.QtCore import QSize, Qt
+import pyautogui
 
 tkinter.Tk().withdraw()
 
@@ -35,7 +36,10 @@ class MainWindow(widgets.QMainWindow):
 
         # Set the central widget of the Window.
         self.setCentralWidget(container)
-        self.resize(QSize(400,300))
+        width, height = pyautogui.size()
+        width = int(width*0.9)
+        height = int(height*0.9)
+        self.resize(QSize(width, height))
 
     def the_button_was_clicked(self):
         print("Clicked!")
